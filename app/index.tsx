@@ -124,16 +124,15 @@ const styles = StyleSheet.create({
   title: { marginVertical: 8, fontSize: 16, color: "#666" },
   listWrapper: {
     width: "92%",
-    backgroundColor: "#FFFB00",
+
     borderRadius: 4,
     paddingVertical: 8,
   },
   scrollview: { width: "100%" },
   listContent: { paddingHorizontal: 8, paddingBottom: 24 },
   listItem: {
-    backgroundColor: "#7CFC00",
     borderWidth: 3,
-    borderColor: "#FF0000",
+    borderColor: "black",
     paddingVertical: 8,
     paddingHorizontal: 10,
     marginVertical: 6,
