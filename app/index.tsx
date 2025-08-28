@@ -7,30 +7,57 @@ import {
   View,
 } from "react-native";
 import AddBoot from "./components/AddBoot";
+import UpdateBoot from "./components/UpdateBoot";
 
 type Boot = { id: string; type: string };
 
 const App: React.FC = () => {
-  const [bootList, addBootList] = useState<Boot[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [bootList, setBootList] = useState<Boot[]>([]);
+  const [addVisible, setAddVisible] = useState(false);
+  const [updateVisible, setUpdateVisible] = useState(false);
+  const [bootToUpdate, setBootToUpdate] = useState<Boot | undefined>(undefined);
+  const [bootToUpdateIndex, setBootToUpdateIndex] = useState<number | null>(
+    null
+  );
 
   const bootDataHandler = (id: string, type: string) => {
     const newId = id.trim();
     const newType = type.trim();
     if (!newId && !newType) return;
-    addBootList((prev) => [...prev, { id: newId, type: newType }]);
-    setModalVisible(false);
+    setBootList((prev) => [...prev, { id: newId, type: newType }]);
+    setAddVisible(false);
   };
 
   const deleteBoot = (removeIndex: number) => {
-    addBootList((prev) => prev.filter((_, idx) => idx !== removeIndex));
+    setBootList((prev) => prev.filter((_, idx) => idx !== removeIndex));
   };
 
-  const showInputModal = () => setModalVisible(true);
+  const updateBoot = (index: number) => {
+    setBootToUpdateIndex(index);
+    setBootToUpdate(bootList[index]);
+    setUpdateVisible(true);
+  };
+
+  const saveBootUpdate = (id: string, type: string) => {
+    if (bootToUpdateIndex === null) return;
+    const newId = id.trim();
+    const newType = type.trim();
+    setBootList((prev) =>
+      prev.map((b, i) =>
+        i === bootToUpdateIndex ? { id: newId, type: newType } : b
+      )
+    );
+    setUpdateVisible(false);
+    setBootToUpdate(undefined);
+    setBootToUpdateIndex(null);
+  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.addBtn} onPress={showInputModal}>
+      <TouchableOpacity
+        style={styles.addBtn}
+        onPress={() => setAddVisible(true)}
+      >
         <Text style={styles.addBtnText}>ADD BOOT</Text>
       </TouchableOpacity>
 
@@ -45,6 +72,7 @@ const App: React.FC = () => {
             <TouchableOpacity
               key={`${item.id}-${index}`}
               onLongPress={() => deleteBoot(index)}
+              onPress={() => updateBoot(index)}
             >
               <View style={styles.listItem}>
                 <Text>
@@ -57,9 +85,20 @@ const App: React.FC = () => {
       </View>
 
       <AddBoot
-        visible={modalVisible}
+        visible={addVisible}
         onAdd={bootDataHandler}
-        onClose={() => setModalVisible(false)}
+        onCancel={() => setAddVisible(false)}
+      />
+
+      <UpdateBoot
+        visible={updateVisible}
+        bootToUpdate={bootToUpdate}
+        onCancel={() => {
+          setUpdateVisible(false);
+          setBootToUpdate(undefined);
+          setBootToUpdateIndex(null);
+        }}
+        onSave={saveBootUpdate}
       />
     </View>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Platform,
@@ -9,20 +9,31 @@ import {
   View,
 } from "react-native";
 
+type Boot = { id: string; type: string };
+
 type Props = {
   visible: boolean;
-  onAdd: (id: string, type: string) => void;
+  bootToUpdate?: Boot;
+  onSave: (id: string, type: string) => void;
   onCancel: () => void;
 };
 
-const AddBoot: React.FC<Props> = ({ visible, onAdd, onCancel }) => {
+const UpdateBoot: React.FC<Props> = ({
+  visible,
+  bootToUpdate,
+  onSave,
+  onCancel,
+}) => {
   const [id, setId] = useState("");
   const [type, setType] = useState("");
 
+  useEffect(() => {
+    setId(bootToUpdate ? bootToUpdate.id : "");
+    setType(bootToUpdate ? bootToUpdate.type : "");
+  }, [bootToUpdate]);
+
   const handleOk = () => {
-    onAdd(id, type);
-    setId("");
-    setType("");
+    onSave(id, type);
   };
 
   const handleCancel = () => {
@@ -40,13 +51,12 @@ const AddBoot: React.FC<Props> = ({ visible, onAdd, onCancel }) => {
     >
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <Text style={styles.header}>Add boot</Text>
+          <Text style={styles.header}>Update boot</Text>
 
           <View style={styles.field}>
             <Text style={styles.label}>ID</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g. 5001"
               value={id}
               onChangeText={setId}
               keyboardType={Platform.select({
@@ -60,7 +70,6 @@ const AddBoot: React.FC<Props> = ({ visible, onAdd, onCancel }) => {
             <Text style={styles.label}>Type</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g. Winter boot"
               value={type}
               onChangeText={setType}
             />
@@ -86,7 +95,7 @@ const AddBoot: React.FC<Props> = ({ visible, onAdd, onCancel }) => {
   );
 };
 
-export default AddBoot;
+export default UpdateBoot;
 
 const styles = StyleSheet.create({
   backdrop: {
