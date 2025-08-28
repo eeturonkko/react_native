@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -8,75 +8,63 @@ import {
   View,
 } from "react-native";
 
-type BootItem = { id: string; type: string; size: string };
+type FishItem = { id: string; name: string };
 
 export default function App() {
-  const [type, setType] = useState("");
-  const [size, setSize] = useState("");
-  const [items, setItems] = useState<BootItem[]>([]);
+  const [text, setText] = useState("");
+  const [fish, setFish] = useState<FishItem[]>([
+    { id: "1", name: "Pike" },
+    { id: "2", name: "Pike-perch" },
+    { id: "3", name: "Perch" },
+    { id: "4", name: "Vendace" },
+  ]);
 
-  const handleOk = () => {
-    const t = type.trim();
-    const s = size.trim();
-    if (!t && !s) return;
-    setItems((prev) => [
-      ...prev,
-      { id: `${Date.now()}`, type: t || "—", size: s || "—" },
-    ]);
+  const addFish = () => {
+    const t = text.trim();
+    if (!t) return;
+    setFish((prev) => [...prev, { id: `${Date.now()}`, name: t }]);
+    setText("");
   };
 
-  const handleCancel = () => {
-    setType("");
-    setSize("");
+  const removeFish = (id: string) => {
+    setFish((prev) => prev.filter((f) => f.id !== id));
   };
-
-  const renderItem = ({ item, index }: { item: BootItem; index: number }) => (
-    <View style={styles.listItem}>
-      <Text style={styles.listText}>
-        {index + 1}: {item.type} / {item.size}
-      </Text>
-    </View>
-  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputRow}>
+      <View style={styles.topRow}>
         <TextInput
           style={[styles.input, styles.inputLeft]}
-          placeholder="Boot type (e.g., Leather boot)"
-          value={type}
-          onChangeText={setType}
+          placeholder="Add fish (e.g., Bronze bream)"
+          value={text}
+          onChangeText={setText}
         />
-        <TextInput
-          style={[styles.input, styles.inputRight]}
-          placeholder="Size (e.g., 47)"
-          value={size}
-          onChangeText={setSize}
-          keyboardType="number-pad"
-        />
-      </View>
-
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={[styles.btn, styles.btnCancel]}
-          onPress={handleCancel}
-        >
-          <Text style={styles.btnText}>CANCEL</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.btn, styles.btnOk]} onPress={handleOk}>
-          <Text style={styles.btnText}>OK</Text>
+        <TouchableOpacity style={styles.okBtn} onPress={addFish}>
+          <Text style={styles.okBtnText}>OK</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.listTitle}>List of Boots</Text>
+      <Text style={styles.title}>List of fish</Text>
 
-      <FlatList
-        style={styles.list}
-        data={items}
-        keyExtractor={(it) => it.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 24 }}
-      />
+      <View style={styles.listWrapper}>
+        <ScrollView contentContainerStyle={styles.listContent}>
+          {fish.length === 0 && (
+            <Text style={styles.listText}>No fish added yet.</Text>
+          )}
+          {fish.map((item, idx) => (
+            <TouchableOpacity
+              key={item.id}
+              onLongPress={() => removeFish(item.id)}
+              activeOpacity={0.7}
+              style={styles.listItem}
+            >
+              <Text style={styles.listText}>
+                {idx + 1}: {item.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -84,16 +72,16 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 24,
+    paddingTop: 20,
     backgroundColor: "#fff",
     alignItems: "center",
   },
-  inputRow: {
+  topRow: {
     flexDirection: "row",
-    width: "90%",
+    width: "92%",
     justifyContent: "space-between",
-    marginTop: 16,
-    marginBottom: 12,
+    alignItems: "center",
+    marginBottom: 8,
   },
   input: {
     flex: 1,
@@ -106,35 +94,31 @@ const styles = StyleSheet.create({
     backgroundColor: "#bfe7f0",
   },
   inputLeft: { marginRight: 10 },
-  inputRight: { marginLeft: 10 },
-  buttonRow: {
-    flexDirection: "row",
-    width: "70%",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  btn: {
-    minWidth: 130,
+  okBtn: {
+    backgroundColor: "#1976D2",
     paddingVertical: 10,
+    paddingHorizontal: 18,
     borderRadius: 4,
-    alignItems: "center",
     elevation: 2,
   },
-  btnCancel: { backgroundColor: "#1976D2" },
-  btnOk: { backgroundColor: "#1976D2" },
-  btnText: { color: "#fff", fontWeight: "700", letterSpacing: 0.5 },
-  listTitle: {
-    marginTop: 6,
-    marginBottom: 6,
+  okBtnText: { color: "#fff", fontWeight: "700", letterSpacing: 0.5 },
+  title: {
+    marginVertical: 6,
     fontSize: 16,
     color: "#666",
   },
-  list: {
+  listWrapper: {
     width: "92%",
+    borderRadius: 4,
+    paddingVertical: 8,
+  },
+  listContent: {
+    paddingHorizontal: 8,
+    paddingBottom: 24,
   },
   listItem: {
     borderWidth: 3,
-    borderColor: "blackr",
+    borderColor: "black",
     paddingVertical: 8,
     paddingHorizontal: 10,
     marginVertical: 6,
@@ -142,6 +126,7 @@ const styles = StyleSheet.create({
   },
   listText: {
     fontSize: 16,
-    color: "#111",
+    color: "#116611",
+    fontWeight: "600",
   },
 });
