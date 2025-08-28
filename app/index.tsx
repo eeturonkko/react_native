@@ -3,130 +3,101 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import AddBoot from "./components/AddBoot";
 
-type FishItem = { id: string; name: string };
+type Boot = { id: string; type: string };
 
-export default function App() {
-  const [text, setText] = useState("");
-  const [fish, setFish] = useState<FishItem[]>([
-    { id: "1", name: "Pike" },
-    { id: "2", name: "Pike-perch" },
-    { id: "3", name: "Perch" },
-    { id: "4", name: "Vendace" },
-  ]);
+const App: React.FC = () => {
+  const [bootList, addBootList] = useState<Boot[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const addFish = () => {
-    const t = text.trim();
-    if (!t) return;
-    setFish((prev) => [...prev, { id: `${Date.now()}`, name: t }]);
-    setText("");
+  const bootDataHandler = (id: string, type: string) => {
+    const newId = id.trim();
+    const newType = type.trim();
+    if (!newId && !newType) return;
+    addBootList((prev) => [...prev, { id: newId, type: newType }]);
+    setModalVisible(false);
   };
 
-  const removeFish = (id: string) => {
-    setFish((prev) => prev.filter((f) => f.id !== id));
+  const deleteBoot = (removeIndex: number) => {
+    addBootList((prev) => prev.filter((_, idx) => idx !== removeIndex));
   };
+
+  const showInputModal = () => setModalVisible(true);
 
   return (
     <View style={styles.container}>
-      <View style={styles.topRow}>
-        <TextInput
-          style={[styles.input, styles.inputLeft]}
-          placeholder="Add fish (e.g., Bronze bream)"
-          value={text}
-          onChangeText={setText}
-        />
-        <TouchableOpacity style={styles.okBtn} onPress={addFish}>
-          <Text style={styles.okBtnText}>OK</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.addBtn} onPress={showInputModal}>
+        <Text style={styles.addBtnText}>ADD BOOT</Text>
+      </TouchableOpacity>
 
-      <Text style={styles.title}>List of fish</Text>
+      <Text style={styles.title}>Boot list</Text>
 
       <View style={styles.listWrapper}>
-        <ScrollView contentContainerStyle={styles.listContent}>
-          {fish.length === 0 && (
-            <Text style={styles.listText}>No fish added yet.</Text>
-          )}
-          {fish.map((item, idx) => (
+        <ScrollView
+          style={styles.scrollview}
+          contentContainerStyle={styles.listContent}
+        >
+          {bootList.map((item, index) => (
             <TouchableOpacity
-              key={item.id}
-              onLongPress={() => removeFish(item.id)}
-              activeOpacity={0.7}
-              style={styles.listItem}
+              key={`${item.id}-${index}`}
+              onLongPress={() => deleteBoot(index)}
             >
-              <Text style={styles.listText}>
-                {idx + 1}: {item.name}
-              </Text>
+              <View style={styles.listItem}>
+                <Text>
+                  {item.id}: {item.type}
+                </Text>
+              </View>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
+
+      <AddBoot
+        visible={modalVisible}
+        onAdd={bootDataHandler}
+        onClose={() => setModalVisible(false)}
+      />
     </View>
   );
-}
+};
+
+export default App;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
+    alignItems: "center",
+    paddingTop: 24,
     backgroundColor: "#fff",
-    alignItems: "center",
   },
-  topRow: {
-    flexDirection: "row",
-    width: "92%",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 2,
-    borderColor: "#333",
-    borderRadius: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 16,
-    backgroundColor: "#bfe7f0",
-  },
-  inputLeft: { marginRight: 10 },
-  okBtn: {
+  addBtn: {
     backgroundColor: "#1976D2",
-    paddingVertical: 10,
     paddingHorizontal: 18,
-    borderRadius: 4,
+    paddingVertical: 10,
+    borderRadius: 6,
     elevation: 2,
   },
-  okBtnText: { color: "#fff", fontWeight: "700", letterSpacing: 0.5 },
-  title: {
-    marginVertical: 6,
-    fontSize: 16,
-    color: "#666",
-  },
+  addBtnText: { color: "#fff", fontWeight: "700", letterSpacing: 0.5 },
+  title: { marginVertical: 8, fontSize: 16, color: "#666" },
   listWrapper: {
     width: "92%",
+    backgroundColor: "#FFFB00",
     borderRadius: 4,
     paddingVertical: 8,
   },
-  listContent: {
-    paddingHorizontal: 8,
-    paddingBottom: 24,
-  },
+  scrollview: { width: "100%" },
+  listContent: { paddingHorizontal: 8, paddingBottom: 24 },
   listItem: {
+    backgroundColor: "#7CFC00",
     borderWidth: 3,
-    borderColor: "black",
+    borderColor: "#FF0000",
     paddingVertical: 8,
     paddingHorizontal: 10,
     marginVertical: 6,
     borderRadius: 4,
-  },
-  listText: {
-    fontSize: 16,
-    color: "#116611",
-    fontWeight: "600",
   },
 });
