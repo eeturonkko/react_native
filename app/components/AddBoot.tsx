@@ -11,23 +11,26 @@ import {
 
 type Props = {
   visible: boolean;
-  onAdd: (id: string, type: string) => void;
+  onAdd: (type: string, size: string) => void;
   onCancel: () => void;
 };
 
 const AddBoot: React.FC<Props> = ({ visible, onAdd, onCancel }) => {
-  const [id, setId] = useState("");
   const [type, setType] = useState("");
+  const [size, setSize] = useState("");
 
-  const handleOk = () => {
-    onAdd(id, type);
-    setId("");
+  const ok = () => {
+    const t = type.trim();
+    const s = size.trim();
+    if (!t || !s) return;
+    onAdd(t, s);
     setType("");
+    setSize("");
   };
 
-  const handleCancel = () => {
-    setId("");
+  const cancel = () => {
     setType("");
+    setSize("");
     onCancel();
   };
 
@@ -41,21 +44,6 @@ const AddBoot: React.FC<Props> = ({ visible, onAdd, onCancel }) => {
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <Text style={styles.header}>Add boot</Text>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>ID</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g. 5001"
-              value={id}
-              onChangeText={setId}
-              keyboardType={Platform.select({
-                ios: "number-pad",
-                android: "numeric",
-              })}
-            />
-          </View>
-
           <View style={styles.field}>
             <Text style={styles.label}>Type</Text>
             <TextInput
@@ -65,18 +53,27 @@ const AddBoot: React.FC<Props> = ({ visible, onAdd, onCancel }) => {
               onChangeText={setType}
             />
           </View>
-
+          <View style={styles.field}>
+            <Text style={styles.label}>Size</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 47"
+              value={size}
+              onChangeText={setSize}
+              keyboardType={Platform.select({
+                ios: "number-pad",
+                android: "numeric",
+              })}
+            />
+          </View>
           <View style={styles.actions}>
             <TouchableOpacity
               style={[styles.btn, styles.gray]}
-              onPress={handleCancel}
+              onPress={cancel}
             >
               <Text style={styles.btnText}>CANCEL</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.btn, styles.blue]}
-              onPress={handleOk}
-            >
+            <TouchableOpacity style={[styles.btn, styles.blue]} onPress={ok}>
               <Text style={styles.btnText}>OK</Text>
             </TouchableOpacity>
           </View>

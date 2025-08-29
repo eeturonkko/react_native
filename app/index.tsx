@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -8,48 +8,56 @@ import {
 } from "react-native";
 import AddBoot from "./components/AddBoot";
 import UpdateBoot from "./components/UpdateBoot";
-
-type Boot = { id: string; type: string };
+import {
+  Boot,
+  deleteBootRow,
+  fetchBoots,
+  initDb,
+  insertBoot,
+  updateBootRow,
+} from "./db";
 
 const App: React.FC = () => {
-  const [bootList, setBootList] = useState<Boot[]>([]);
+  const [boots, setBoots] = useState<Boot[]>([]);
   const [addVisible, setAddVisible] = useState(false);
   const [updateVisible, setUpdateVisible] = useState(false);
-  const [bootToUpdate, setBootToUpdate] = useState<Boot | undefined>(undefined);
-  const [bootToUpdateIndex, setBootToUpdateIndex] = useState<number | null>(
-    null
-  );
+  const [selected, setSelected] = useState<Boot | undefined>(undefined);
 
-  const bootDataHandler = (id: string, type: string) => {
-    const newId = id.trim();
-    const newType = type.trim();
-    if (!newId && !newType) return;
-    setBootList((prev) => [...prev, { id: newId, type: newType }]);
+  const load = async () => {
+    await initDb();
+    const rows = await fetchBoots();
+    setBoots(rows);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const onAdd = async (type: string, size: string) => {
+    await insertBoot(type, size);
+    const rows = await fetchBoots();
+    setBoots(rows);
     setAddVisible(false);
   };
 
-  const deleteBoot = (removeIndex: number) => {
-    setBootList((prev) => prev.filter((_, idx) => idx !== removeIndex));
+  const onDelete = async (id: number) => {
+    await deleteBootRow(id);
+    const rows = await fetchBoots();
+    setBoots(rows);
   };
 
-  const updateBoot = (index: number) => {
-    setBootToUpdateIndex(index);
-    setBootToUpdate(bootList[index]);
+  const startUpdate = (boot: Boot) => {
+    setSelected(boot);
     setUpdateVisible(true);
   };
 
-  const saveBootUpdate = (id: string, type: string) => {
-    if (bootToUpdateIndex === null) return;
-    const newId = id.trim();
-    const newType = type.trim();
-    setBootList((prev) =>
-      prev.map((b, i) =>
-        i === bootToUpdateIndex ? { id: newId, type: newType } : b
-      )
-    );
+  const onSaveUpdate = async (type: string, size: string) => {
+    if (!selected) return;
+    await updateBootRow(selected.id, type, size);
+    const rows = await fetchBoots();
+    setBoots(rows);
+    setSelected(undefined);
     setUpdateVisible(false);
-    setBootToUpdate(undefined);
-    setBootToUpdateIndex(null);
   };
 
   return (
@@ -65,18 +73,18 @@ const App: React.FC = () => {
 
       <View style={styles.listWrapper}>
         <ScrollView
-          style={styles.scrollview}
+          style={styles.scroll}
           contentContainerStyle={styles.listContent}
         >
-          {bootList.map((item, index) => (
+          {boots.map((b) => (
             <TouchableOpacity
-              key={`${item.id}-${index}`}
-              onLongPress={() => deleteBoot(index)}
-              onPress={() => updateBoot(index)}
+              key={b.id}
+              onLongPress={() => onDelete(b.id)}
+              onPress={() => startUpdate(b)}
             >
               <View style={styles.listItem}>
                 <Text>
-                  {item.id}: {item.type}
+                  {b.id}: {b.type} / {b.size}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -86,19 +94,18 @@ const App: React.FC = () => {
 
       <AddBoot
         visible={addVisible}
-        onAdd={bootDataHandler}
+        onAdd={onAdd}
         onCancel={() => setAddVisible(false)}
       />
 
       <UpdateBoot
         visible={updateVisible}
-        bootToUpdate={bootToUpdate}
+        boot={selected}
+        onSave={onSaveUpdate}
         onCancel={() => {
+          setSelected(undefined);
           setUpdateVisible(false);
-          setBootToUpdate(undefined);
-          setBootToUpdateIndex(null);
         }}
-        onSave={saveBootUpdate}
       />
     </View>
   );
@@ -124,15 +131,16 @@ const styles = StyleSheet.create({
   title: { marginVertical: 8, fontSize: 16, color: "#666" },
   listWrapper: {
     width: "92%",
-
+    backgroundColor: "#FFFB00",
     borderRadius: 4,
     paddingVertical: 8,
   },
-  scrollview: { width: "100%" },
+  scroll: { width: "100%" },
   listContent: { paddingHorizontal: 8, paddingBottom: 24 },
   listItem: {
+    backgroundColor: "#7CFC00",
     borderWidth: 3,
-    borderColor: "black",
+    borderColor: "#FF0000",
     paddingVertical: 8,
     paddingHorizontal: 10,
     marginVertical: 6,

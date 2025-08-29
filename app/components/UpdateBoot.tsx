@@ -8,37 +8,34 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-type Boot = { id: string; type: string };
+import { Boot } from "../db";
 
 type Props = {
   visible: boolean;
-  bootToUpdate?: Boot;
-  onSave: (id: string, type: string) => void;
+  boot?: Boot;
+  onSave: (type: string, size: string) => void;
   onCancel: () => void;
 };
 
-const UpdateBoot: React.FC<Props> = ({
-  visible,
-  bootToUpdate,
-  onSave,
-  onCancel,
-}) => {
-  const [id, setId] = useState("");
+const UpdateBoot: React.FC<Props> = ({ visible, boot, onSave, onCancel }) => {
   const [type, setType] = useState("");
+  const [size, setSize] = useState("");
 
   useEffect(() => {
-    setId(bootToUpdate ? bootToUpdate.id : "");
-    setType(bootToUpdate ? bootToUpdate.type : "");
-  }, [bootToUpdate]);
+    setType(boot ? boot.type : "");
+    setSize(boot ? boot.size : "");
+  }, [boot]);
 
-  const handleOk = () => {
-    onSave(id, type);
+  const ok = () => {
+    const t = type.trim();
+    const s = size.trim();
+    if (!t || !s) return;
+    onSave(t, s);
   };
 
-  const handleCancel = () => {
-    setId("");
+  const cancel = () => {
     setType("");
+    setSize("");
     onCancel();
   };
 
@@ -52,20 +49,6 @@ const UpdateBoot: React.FC<Props> = ({
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <Text style={styles.header}>Update boot</Text>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>ID</Text>
-            <TextInput
-              style={styles.input}
-              value={id}
-              onChangeText={setId}
-              keyboardType={Platform.select({
-                ios: "number-pad",
-                android: "numeric",
-              })}
-            />
-          </View>
-
           <View style={styles.field}>
             <Text style={styles.label}>Type</Text>
             <TextInput
@@ -74,18 +57,26 @@ const UpdateBoot: React.FC<Props> = ({
               onChangeText={setType}
             />
           </View>
-
+          <View style={styles.field}>
+            <Text style={styles.label}>Size</Text>
+            <TextInput
+              style={styles.input}
+              value={size}
+              onChangeText={setSize}
+              keyboardType={Platform.select({
+                ios: "number-pad",
+                android: "numeric",
+              })}
+            />
+          </View>
           <View style={styles.actions}>
             <TouchableOpacity
               style={[styles.btn, styles.gray]}
-              onPress={handleCancel}
+              onPress={cancel}
             >
               <Text style={styles.btnText}>CANCEL</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.btn, styles.blue]}
-              onPress={handleOk}
-            >
+            <TouchableOpacity style={[styles.btn, styles.blue]} onPress={ok}>
               <Text style={styles.btnText}>OK</Text>
             </TouchableOpacity>
           </View>
